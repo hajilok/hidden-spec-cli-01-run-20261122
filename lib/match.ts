@@ -66,12 +66,13 @@ export function findOccurrences(
   for (let t = 0; t <= maxTier; t += 1) {
     const tier = t as Tier;
     const normNeedle = needle.map((l) => normalizeLine(l, tier));
+    const normFile = tier === 0 ? fileLines : fileLines.map((l) => normalizeLine(l, tier));
     const positions: number[] = [];
     for (let i = startAt; i <= lastStart; i += 1) {
-      if (normalizeLine(fileLines[i]!, tier) !== normNeedle[0]!) continue;
+      if (normFile[i]! !== normNeedle[0]!) continue;
       let ok = true;
       for (let k = 1; k < n; k += 1) {
-        if (normalizeLine(fileLines[i + k]!, tier) !== normNeedle[k]!) {
+        if (normFile[i + k]! !== normNeedle[k]!) {
           ok = false;
           break;
         }

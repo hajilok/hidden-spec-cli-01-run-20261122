@@ -23,8 +23,9 @@ interface UnifiedSection {
 const HUNK_HEADER_RE = /^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/;
 
 function parseDiffGit(line: string): [string, string] | null {
-  if (!line.startsWith('diff --git ')) return null;
-  const rest = line.slice('diff --git '.length);
+  const trimmed = line.replace(/ +$/, '');
+  if (!trimmed.startsWith('diff --git ')) return null;
+  const rest = trimmed.slice('diff --git '.length);
   if (!rest.startsWith('a/')) return null;
   const afterA = rest.slice(2);
 

@@ -4,7 +4,7 @@
 // In a trial the grader runs `node /bot/main.ts` with MAKEFUN_ENV_URL set, and the hand-over
 // at the bottom delegates to runner.ts.
 
-import { mkdirSync, readFileSync, rmSync, writeFileSync, writeSync } from 'node:fs';
+import { mkdirSync, readFileSync, rmdirSync, rmSync, writeFileSync, writeSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { parseJsonEdits } from './lib/json.ts';
 import { parseSearchReplaceEdits } from './lib/search-replace.ts';
@@ -160,9 +160,19 @@ function run(args: string[]): { code: number; out: string[] } {
   reportRows.sort((a, b) => byteOrder(a.key, b.key));
 
   if (!check) {
-    // Delete removed files first, then write created/modified files.
+    // Delete removed files first and prune any emptied ancestor directories so
+    // replacing a directory's files with a regular file at the directory's path succeeds.
     for (const p of [...deleted].sort(byteOrder)) {
       rmSync(p, { force: true });
+      let dir = dirname(p);
+      while (dir !== '.' && dir !== '' && dir !== '/') {
+        try {
+          rmdirSync(dir);
+        } catch {
+          break;
+        }
+        dir = dirname(dir);
+      }
     }
     for (const p of [...added, ...modified].sort(byteOrder)) {
       mkdirSync(dirname(p), { recursive: true });
